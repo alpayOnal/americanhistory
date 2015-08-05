@@ -119,21 +119,28 @@ public class StoryPlayer {
     public static void play() {
         MainActivity.myService.startPlayer();
         StoryPlayer.playingNotification();
+        StoryPlayer.handlerPostDelay();
+    }
+
+    public static void handlerPostDelay() {
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 //Do something after 100ms
                 if (MainActivity.myService.getMediaPlayer().isPlaying()) {
+                    Log.d("", " ---- getting current position " + String.valueOf(MainActivity.myService.getMediaPlayer().getCurrentPosition()));
                     seekbar.setProgress(MainActivity.myService.getMediaPlayer().getCurrentPosition());
                     handler.postDelayed(this, 600);
                 }
             }
         }, 600);
     }
+
     public static void updateSeekbar() {
         Log.d("", " ---- getting current position " + String.valueOf(MainActivity.myService.getMediaPlayer().getCurrentPosition()));
         seekbar.setProgress(MainActivity.myService.getMediaPlayer().getCurrentPosition());
+        handlerPostDelay();
     }
 
     public static void pause() {
@@ -148,14 +155,9 @@ public class StoryPlayer {
         return MainActivity.myService.getMediaPlayer();
     }
 
-    public static String getUrl() {
-        return MainActivity.myService.getUrl();
-    }
-
     public static Story getStory() {
         return StoryPlayer.story;
     }
-
 
     public static void resetProgress() {
         seekbar.setProgress(0);

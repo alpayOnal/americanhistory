@@ -71,20 +71,37 @@ public class FragmentStory extends FragmentDebug
     @Override
     public void onResume() {
         super.onResume();
-        String a = MainActivity.myService.getUrl();
-        Log.d("------------serviceUrl", a);
+        String serviceMediaUrl = MainActivity.myService.getUrl();
+        Log.d("--------servicemediUrl", serviceMediaUrl);
+
+        try{
+            Log.d("------storyAudioUrl", this.story.audioUrl.toString());
+            if (!serviceMediaUrl.equals(this.story.audioUrl.toString())){
+                StoryPlayer.stop();
+                MainActivity.myService.getMediaPlayer().reset();
+                seekbar.setProgress(0);
+                StoryPlayer.set(story, seekbar, getActivity().getApplication());
+            }
+        }catch (Exception e)
+        {
+            Log.e("exception", e.getMessage());
+        }
 
         if (MainActivity.myService.getMediaPlayer().isPlaying()) {
             playButton.setImageResource(android.R.drawable.ic_media_pause);
-            Log.d("----------------", "playing" + a);
-            if (a !="")
+            Log.d("----------------", "playing" + serviceMediaUrl);
+            if (serviceMediaUrl != "") {
+                StoryPlayer.set(story, seekbar, getActivity().getApplication());
                 StoryPlayer.updateSeekbar();
+            }
 
         } else {
-            Log.d("----------------", "paused " + a);
+            Log.d("----------------", "paused " + serviceMediaUrl);
             playButton.setImageResource(android.R.drawable.ic_media_play);
-            if (a !="")
+            if (serviceMediaUrl != "") {
+                StoryPlayer.set(story, seekbar, getActivity().getApplication());
                 StoryPlayer.updateSeekbar();
+            }
         }
     }
 
@@ -286,7 +303,6 @@ public class FragmentStory extends FragmentDebug
     @OnClick(R.id.play)
     public void audioPlay(View view) {
         final ImageButton audioPlay = (ImageButton) view;
-        String url = "http://av.voanews.com/clips/VLE/2015/06/16/5746df4f-750a-4f17-b1ca-d717d0e69bc1.mp3";
         if (playerStatus == "stopped") {
             audioPlay.setImageResource(android.R.drawable.ic_media_pause);
             audioPlay.refreshDrawableState();
