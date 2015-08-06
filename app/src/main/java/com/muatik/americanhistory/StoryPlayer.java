@@ -41,6 +41,7 @@ public class StoryPlayer {
     private static NotificationManager notificationmanager;
     private static int notificationId =1;
     private static NotificationCompat.Builder builder;
+    private static Boolean handlerStatus = false;
 
     public static class PlayingNotificationListener extends BroadcastReceiver {
         private RemoteViews remoteViews;
@@ -83,8 +84,6 @@ public class StoryPlayer {
     };
 
     public static void set(Story story, SeekBar seekbar, Application app) {
-
-        Log.d("storyplayer---------", story.audioUrl.toString());
         LocalBroadcastManager.getInstance(app.getBaseContext()).registerReceiver(MediaPlayerServiceListener,
                 new IntentFilter("MediaPlayerService"));
         StoryPlayer.seekbar = seekbar;
@@ -100,17 +99,14 @@ public class StoryPlayer {
         seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Log.d("mustafa", "onProgressChanged + " + String.valueOf(progress / 1000));
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                Log.d("mustafa", "onStartTrackingTouch + " + String.valueOf(seekBar.getProgress() / 1000));
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                Log.d("mustafa", "onStopTrackingTouch + " + String.valueOf(seekBar.getProgress() / 1000));
                 MainActivity.myService.getMediaPlayer().seekTo(seekBar.getProgress());
             }
         });
@@ -123,22 +119,24 @@ public class StoryPlayer {
     }
 
     public static void handlerPostDelay() {
+        handlerStatus = true;
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 //Do something after 100ms
                 if (MainActivity.myService.getMediaPlayer().isPlaying()) {
-                    Log.d("", " ---- getting current position " + String.valueOf(MainActivity.myService.getMediaPlayer().getCurrentPosition()));
                     seekbar.setProgress(MainActivity.myService.getMediaPlayer().getCurrentPosition());
-                    handler.postDelayed(this, 600);
+                    if (handlerStatus)
+                        handler.postDelayed(this, 600);
+                    else
+                        seekbar.setProgress(0);
                 }
             }
         }, 600);
     }
 
     public static void updateSeekbar() {
-        Log.d("", " ---- getting current position " + String.valueOf(MainActivity.myService.getMediaPlayer().getCurrentPosition()));
         seekbar.setProgress(MainActivity.myService.getMediaPlayer().getCurrentPosition());
         handlerPostDelay();
     }
@@ -153,6 +151,10 @@ public class StoryPlayer {
 
     public static MediaPlayer getPlayer() {
         return MainActivity.myService.getMediaPlayer();
+    }
+
+    public static String getServiceMediaUrl() {
+        return MainActivity.myService.getUrl();
     }
 
     public static Story getStory() {
@@ -173,12 +175,11 @@ public class StoryPlayer {
 
         remoteViews.setOnClickPendingIntent(R.id.play, pIntent);
         Intent mainActivityIntent = new Intent(StoryPlayer.application.getApplicationContext(), MainActivity.class);
-        Log.d("------------storyId", StoryPlayer.story.id.toString());
         mainActivityIntent.putExtra("storyId", StoryPlayer.story.id);
-        mainActivityIntent.setFlags(
-                Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        Log.d("americanhistory.playerStoryId", StoryPlayer.story.id.toString());
+        //mainActivityIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP );
         PendingIntent mainActivityPendingIntent = PendingIntent.getActivity(StoryPlayer.application.getApplicationContext(), 0, mainActivityIntent,
-                PendingIntent.FLAG_CANCEL_CURRENT);
+                PendingIntent.FLAG_UPDATE_CURRENT);
 
         builder = new NotificationCompat.Builder(StoryPlayer.application.getApplicationContext())
                 .setSmallIcon(android.R.drawable.ic_lock_silent_mode_off)
@@ -199,5 +200,13 @@ public class StoryPlayer {
     {
         NotificationManager notificationManager = (NotificationManager)StoryPlayer.application.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
+    }
+
+    public static Boolean getHandlerStatus(){
+        return StoryPlayer.handlerStatus;
+    }
+
+    public static void setHandlerStatus(Boolean handlerStatus){
+        StoryPlayer.handlerStatus =  handlerStatus;
     }
 }

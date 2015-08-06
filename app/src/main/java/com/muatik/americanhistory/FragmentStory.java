@@ -68,35 +68,35 @@ public class FragmentStory extends FragmentDebug
     @InjectView(R.id.media_player) View mediaPlayerView;
     @InjectView(R.id.player_progress) SeekBar seekbar;
 
+
     @Override
     public void onResume() {
         super.onResume();
-        String serviceMediaUrl = MainActivity.myService.getUrl();
-        Log.d("--------servicemediUrl", serviceMediaUrl);
-
+        String serviceMediaUrl = StoryPlayer.getServiceMediaUrl();
         try{
-            Log.d("------storyAudioUrl", this.story.audioUrl.toString());
             if (!serviceMediaUrl.equals(this.story.audioUrl.toString())){
-                StoryPlayer.stop();
-                MainActivity.myService.getMediaPlayer().reset();
-                seekbar.setProgress(0);
-                StoryPlayer.set(story, seekbar, getActivity().getApplication());
+                if (serviceMediaUrl != "") {
+                    playButton.setImageResource(android.R.drawable.ic_media_play);
+                    StoryPlayer.setHandlerStatus(false);
+                    return;
+                }
+            }else {
+                playButton.setImageResource(android.R.drawable.ic_media_pause);
+                StoryPlayer.handlerPostDelay();
             }
         }catch (Exception e)
         {
-            Log.e("exception", e.getMessage());
+            Log.e("exception", "default story url not found");
         }
 
         if (MainActivity.myService.getMediaPlayer().isPlaying()) {
             playButton.setImageResource(android.R.drawable.ic_media_pause);
-            Log.d("----------------", "playing" + serviceMediaUrl);
             if (serviceMediaUrl != "") {
                 StoryPlayer.set(story, seekbar, getActivity().getApplication());
                 StoryPlayer.updateSeekbar();
             }
 
         } else {
-            Log.d("----------------", "paused " + serviceMediaUrl);
             playButton.setImageResource(android.R.drawable.ic_media_play);
             if (serviceMediaUrl != "") {
                 StoryPlayer.set(story, seekbar, getActivity().getApplication());
@@ -302,6 +302,9 @@ public class FragmentStory extends FragmentDebug
 
     @OnClick(R.id.play)
     public void audioPlay(View view) {
+        if (!StoryPlayer.getHandlerStatus())
+            StoryPlayer.getPlayer().reset();
+
         final ImageButton audioPlay = (ImageButton) view;
         if (playerStatus == "stopped") {
             audioPlay.setImageResource(android.R.drawable.ic_media_pause);
