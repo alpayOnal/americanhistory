@@ -51,7 +51,7 @@ public class Collection {
     }
 
     public List<Story> getList() {
-        Cursor c = db.rawQuery("select * from " + TABLE_STORIES, null);
+        Cursor c = db.rawQuery("select * from " + TABLE_STORIES +" order by sort asc", null);
         List<Story> stories = new ArrayList<Story>();
 
         while(c.moveToNext())

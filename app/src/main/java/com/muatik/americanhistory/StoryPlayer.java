@@ -176,16 +176,21 @@ public class StoryPlayer {
         remoteViews.setOnClickPendingIntent(R.id.play, pIntent);
         Intent mainActivityIntent = new Intent(StoryPlayer.application.getApplicationContext(), MainActivity.class);
         mainActivityIntent.putExtra("storyId", StoryPlayer.story.id);
-        Log.d("americanhistory.playerStoryId", StoryPlayer.story.id.toString());
-        //mainActivityIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP );
-        PendingIntent mainActivityPendingIntent = PendingIntent.getActivity(StoryPlayer.application.getApplicationContext(), 0, mainActivityIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+        //mainActivityIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP|   Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent mainActivityPendingIntent = PendingIntent.getActivity(
+                StoryPlayer.application.getApplicationContext(),
+                0,
+                mainActivityIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+        );
 
         builder = new NotificationCompat.Builder(StoryPlayer.application.getApplicationContext())
                 .setSmallIcon(android.R.drawable.ic_lock_silent_mode_off)
                 .setTicker("american history")
                 .setContentIntent(mainActivityPendingIntent)
                 .setContent(remoteViews);
+
+
 
         //remoteViews.setTextViewText(R.id.title, StoryPlayer.story.title);
         remoteViews.setTextViewText(R.id.text, StoryPlayer.story.title);
